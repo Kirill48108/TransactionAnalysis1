@@ -8,11 +8,11 @@ from dotenv import load_dotenv
 from src.config import API_KEY_exchange, API_KEY_stocks
 
 # Загрузка переменных окружения
-load_dotenv('../.env')
+load_dotenv("../.env")
 
 # Определение текущего каталога
 current_dir = Path(__file__).parent.parent.resolve()
-dir_transactions_excel = current_dir / 'data' / 'operations.xlsx'
+dir_transactions_excel = current_dir / "data" / "operations.xlsx"
 print(dir_transactions_excel)
 
 
@@ -48,13 +48,15 @@ def user_transactions(data_time: pd.Timestamp) -> pd.DataFrame:
     #     (pd.to_datetime(df['Дата операции'], dayfirst=True) <= data_time) &
     #     (pd.to_datetime(df['Дата операции'], dayfirst=True) >= data_time.replace(day=1))
     # ]
-    df_filtered = df.loc[(pd.to_datetime(df['Дата операции'], dayfirst=True) <= data_time) &
-                         (pd.to_datetime(df['Дата операции'], dayfirst=True) >= data_time.replace(day=1))].copy()
+    df_filtered = df.loc[
+        (pd.to_datetime(df["Дата операции"], dayfirst=True) <= data_time)
+        & (pd.to_datetime(df["Дата операции"], dayfirst=True) >= data_time.replace(day=1))
+    ].copy()
     # Расчет кэшбека и группировка по номеру карты
     # df_filtered['кэшбек'] = df_filtered['Сумма операции с округлением'] // 100
-    df_filtered.loc[:, 'кэшбек'] = df_filtered['Сумма операции с округлением'] // 100
-    sales_by_card = df_filtered.groupby('Номер карты')[['Сумма операции с округлением', 'кэшбек']].sum()
-    sorted_sales = sales_by_card.sort_values(by='Сумма операции с округлением', ascending=False)
+    df_filtered.loc[:, "кэшбек"] = df_filtered["Сумма операции с округлением"] // 100
+    sales_by_card = df_filtered.groupby("Номер карты")[["Сумма операции с округлением", "кэшбек"]].sum()
+    sorted_sales = sales_by_card.sort_values(by="Сумма операции с округлением", ascending=False)
 
     print(sorted_sales)
     return sorted_sales
@@ -76,13 +78,14 @@ def max_five_transactions(data_time: pd.Timestamp) -> pd.DataFrame:
 
     # Фильтрация транзакций за указанный месяц
     filtered_df = filtered_df.loc[
-        (pd.to_datetime(filtered_df['Дата операции'],
-                        format="%d.%m.%Y %H:%M:%S", dayfirst=True) <= data_time) &
-        (pd.to_datetime(filtered_df['Дата операции'],
-                        format="%d.%m.%Y %H:%M:%S", dayfirst=True) >= data_time.replace(day=1))
-        ]
+        (pd.to_datetime(filtered_df["Дата операции"], format="%d.%m.%Y %H:%M:%S", dayfirst=True) <= data_time)
+        & (
+            pd.to_datetime(filtered_df["Дата операции"], format="%d.%m.%Y %H:%M:%S", dayfirst=True)
+            >= data_time.replace(day=1)
+        )
+    ]
     # Сортировка и получение 5 лучших транзакций
-    top_transactions = filtered_df.sort_values(by='Сумма операции с округлением', ascending=False).head(5)
+    top_transactions = filtered_df.sort_values(by="Сумма операции с округлением", ascending=False).head(5)
     return top_transactions
 
 
@@ -102,7 +105,7 @@ def exchange_rate() -> list:
         response = requests.get(url, headers=headers)
         # print("Response:", response.text)  # Отладочный вывод
         result = response.json()
-        currency_value = result.get('result')
+        currency_value = result.get("result")
 
         if currency_value is not None:
             new_currency_list.append(currency_value)
@@ -123,15 +126,15 @@ def get_price_stocks_snp500() -> list:
     for stock in stocks_list:
         response = requests.get(f"https://api.twelvedata.com/price?symbol={stock}&apikey={API_KEY_stocks}")
         dict_result = response.json()
-        price_element = dict_result.get('price')
+        price_element = dict_result.get("price")
         price_stocks.append(price_element)
 
     return price_stocks
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     print(day_time_now())
-    print(user_transactions(pd.to_datetime('29-09-2018 00:00:00', dayfirst=True)))
-    print(max_five_transactions(pd.to_datetime('29.09.2018', dayfirst=True)))
+    print(user_transactions(pd.to_datetime("29-09-2018 00:00:00", dayfirst=True)))
+    print(max_five_transactions(pd.to_datetime("29.09.2018", dayfirst=True)))
     # print(exchange_rate())
     # print(get_price_stocks_snp500())
